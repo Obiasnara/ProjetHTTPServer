@@ -22,15 +22,13 @@ public class HttpStaticRequest extends HttpRequest {
 	}
 	
 	public void process(HttpResponse resp) throws Exception {
-		resp.setReplyOk();
-		resp.setContentType("text/html");
 		
 		
 		File[] files = this.m_hs.getFolder().listFiles();
 	    File file_requested = null;
 	    												// This trick is used because I set ./Files as resource directory
-	    if(this.m_ressname == null || this.m_ressname == "" || this.m_ressname.equals("/"+this.m_hs.getFolder().getName()+"/")) {
-	    	this.m_ressname = DEFAULT_FILE;
+	    if(this.m_ressname == null || this.m_ressname == "" || this.m_ressname.equals("/"+this.m_hs.getFolder().getPath()+"/")) {
+	    	this.m_ressname = "/"+this.m_hs.getFolder().getPath()+"/"+DEFAULT_FILE;
 	    }
 	    // Find the file equal to DEFAULT_FILE
 	    if (files != null) {
@@ -43,8 +41,12 @@ public class HttpStaticRequest extends HttpRequest {
 	    }
 	    // Check if file exists
 	    if (file_requested != null && file_requested.exists()) {
-	        // File found, read its content and write to the response
+	    	resp.setReplyOk();
+			resp.setContentType("text/html");
+			
+	    	// File found, read its content and write to the response
 	        InputStream is = new FileInputStream(file_requested);
+	        resp.setContentLength((int)file_requested.length());
 	        PrintStream ps = resp.beginBody();
 	        if(is != null) {
 	        	try {
