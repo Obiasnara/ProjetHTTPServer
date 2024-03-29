@@ -1,0 +1,11 @@
+--2024-03-29 11:11:09--  http://localhost:3000/ricmlets/examples/HelloRicmlet?name=Bob
+Resolving localhost (localhost)... 127.0.0.1
+Connecting to localhost (localhost)|127.0.0.1|:3000... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: unspecified [text/html]
+Saving to: ‘HelloRicmlet?name=Bob’
+
+HelloRicmlet?name=Bob                                    [<=>                                                                                                                   ]       0  --.-KB/s               HelloRicmlet?name=Bob                                    [ <=>                                                                                                                  ]     105  --.-KB/s    in 0s      
+
+2024-03-29 11:11:09 (3,57 MB/s) - ‘HelloRicmlet?name=Bob’ saved [105]
+

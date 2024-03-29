@@ -14,6 +14,7 @@ import httpserver.itf.HttpResponse;
 import httpserver.itf.HttpRicmlet;
 
 
+
 /**
  * Basic HTTP Server Implementation 
  * 
@@ -64,13 +65,18 @@ public class HttpServer {
 	 */
 	public HttpRequest getRequest(BufferedReader br) throws IOException {
 		HttpRequest request = null;
-		
 		String startline = br.readLine();
 		StringTokenizer parseline = new StringTokenizer(startline);
 		String method = parseline.nextToken().toUpperCase(); 
 		String ressname = parseline.nextToken();
 		if (method.equals("GET")) {
-			request = new HttpStaticRequest(this, method, ressname);
+			// Here we check if its dynamic or static
+			if(ressname.substring(0, "/ricmlets".length()).equals("/ricmlets")){
+				// We give br for the server to figure out what ricmlet to start
+				request = new HttpRicmletRequestImpl(this, method, ressname, br);
+			} else {
+				request = new HttpStaticRequest(this, method, ressname);
+			}
 		} else 
 			request = new UnknownRequest(this, method, ressname);
 		return request;
@@ -81,7 +87,11 @@ public class HttpServer {
 	 * Returns an HttpResponse object associated to the given HttpRequest object
 	 */
 	public HttpResponse getResponse(HttpRequest req, PrintStream ps) {
-		return new HttpResponseImpl(this, req, ps);
+		if(req instanceof HttpRicmletRequestImpl) {
+			return new HttpRicmletResponseImpl(this, req, ps);
+		} else {
+			return new HttpResponseImpl(this, req, ps);
+		}
 	}
 
 

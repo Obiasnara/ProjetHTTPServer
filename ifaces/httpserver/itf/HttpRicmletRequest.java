@@ -11,8 +11,11 @@ import httpserver.itf.impl.HttpServer;
  */
 public abstract class HttpRicmletRequest extends HttpRequest {
 	
+	protected BufferedReader request_bufffer_reader;
+	
 	public HttpRicmletRequest(HttpServer hs, String method, String ressname, BufferedReader br) throws IOException {
 		super(hs,method,ressname);
+		request_bufffer_reader = br;
 	}
 
 	/*
