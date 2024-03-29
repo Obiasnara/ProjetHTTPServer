@@ -31,6 +31,7 @@ public class HttpWorker extends Thread {
 			HttpRequest req = m_hs.getRequest(br);
 			HttpResponse resp = m_hs.getResponse(req, ps);
 			
+			
 			// process the HTTP request
 			req.process(resp);
 		} catch (Exception e) {

@@ -42,7 +42,7 @@ public class HttpStaticRequest extends HttpRequest {
 	    // Check if file exists
 	    if (file_requested != null && file_requested.exists()) {
 	    	resp.setReplyOk();
-			resp.setContentType("text/html");
+			resp.setContentType(HttpRequest.getContentType(this.m_ressname));
 			
 	    	// File found, read its content and write to the response
 	        InputStream is = new FileInputStream(file_requested);
@@ -50,7 +50,7 @@ public class HttpStaticRequest extends HttpRequest {
 	        PrintStream ps = resp.beginBody();
 	        if(is != null) {
 	        	try {
-	        		ps.print(new String(is.readAllBytes(), StandardCharsets.UTF_8));
+	        		ps.write(is.readAllBytes());
 	        	} catch (Exception e) {
 	        		is.close();
 	        		resp.setReplyError(500, "Error while reading : " + DEFAULT_FILE);
