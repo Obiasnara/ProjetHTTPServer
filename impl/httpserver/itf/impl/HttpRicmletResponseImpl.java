@@ -3,6 +3,9 @@ package httpserver.itf.impl;
 import java.io.IOException;
 import java.io.PrintStream;
 import java.util.Date;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 import httpserver.itf.HttpRequest;
 import httpserver.itf.HttpRicmletResponse;
@@ -12,6 +15,7 @@ public class HttpRicmletResponseImpl implements HttpRicmletResponse {
 	protected HttpServer m_hs;
 	protected PrintStream m_ps;
 	protected HttpRequest m_req;
+	Map<String, String> cookies = new LinkedHashMap<>();
 
 	protected HttpRicmletResponseImpl(HttpServer hs, HttpRequest req, PrintStream ps) {
 		m_hs = hs;
@@ -23,6 +27,9 @@ public class HttpRicmletResponseImpl implements HttpRicmletResponse {
 	@Override
 	public void setReplyOk() throws IOException {
 		m_ps.println("HTTP/1.0 200 OK");
+		for (Map.Entry<String, String> entry : cookies.entrySet()) {
+			m_ps.println("Set-Cookie: " + entry.getKey() + "=" + entry.getValue() + "; Path=/\r\n");
+		}
 		m_ps.println("Date: " + new Date());
 		m_ps.println("Server: ricm-http 1.0");
 	}
@@ -55,7 +62,7 @@ public class HttpRicmletResponseImpl implements HttpRicmletResponse {
 
 	@Override
 	public void setCookie(String name, String value) {
-		
+		cookies.put(name, value);
 	}
 
 }

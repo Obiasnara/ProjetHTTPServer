@@ -71,7 +71,7 @@ public class HttpServer {
 		String ressname = parseline.nextToken();
 		if (method.equals("GET")) {
 			// Here we check if its dynamic or static
-			if(ressname.substring(0, "/ricmlets".length()).equals("/ricmlets")){
+			if(ressname.length() >= "/ricmlets".length() && ressname.substring(0, "/ricmlets".length()).equals("/ricmlets")){
 				// We give br for the server to figure out what ricmlet to start
 				request = new HttpRicmletRequestImpl(this, method, ressname, br);
 			} else {

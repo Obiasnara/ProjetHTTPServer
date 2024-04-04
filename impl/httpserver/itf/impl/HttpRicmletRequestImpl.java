@@ -16,12 +16,25 @@ import httpserver.itf.HttpSession;
 
 public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 	
+	private static final Map<Class<?>, HttpRicmlet> singletons = new LinkedHashMap<>();
+	
 	Map<String, String> arguments;
+	Map<String, String> cookies;
 	
 	public HttpRicmletRequestImpl(HttpServer hs, String method, String ressname, BufferedReader br) throws IOException {
 		super(hs, method, ressname, br);
 		// We create a "fake" query to parse it correctly
 		this.arguments = splitQuery(new URL("https://localhost/"+ressname));
+		Map<String, String> cookies = new LinkedHashMap<>();
+		String line;
+	    while ((line = br.readLine()).isEmpty() == false) {
+	        if (line.startsWith("Cookie: ")) {
+	        	System.out.println("COOOOKKIIIIIIE");
+	            String[] cookieParts = line.substring("Cookie: ".length()).split(";")[0].split("=");
+	            cookies.put(cookieParts[0], cookieParts[1]);
+	        }
+	    }
+	    this.cookies = cookies;
 	}
 
 	
@@ -53,10 +66,21 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 
 	@Override
 	public String getCookie(String name) {
-		// TODO Auto-generated method stub
-		return null;
+		return cookies == null ? null : cookies.get(name);
 	}
-
+	// Synchronized to prevent duplication
+	public synchronized HttpRicmlet getSingletonRicmlet(Class<?> c) {
+		if (!singletons.containsKey(c)) {
+            try {
+                HttpRicmlet instance = (HttpRicmlet) c.getDeclaredConstructor().newInstance();
+                singletons.put(c, instance);
+            } catch (Exception e) {
+                throw new RuntimeException("Failed to create singleton for class " + c.getName(), e);
+            }
+        }
+        return singletons.get(c);
+	}
+	
 	@Override
 	public void process(HttpResponse resp) throws Exception {
 		String ricmletPath = m_ressname.substring("/ricmlets/".length());
@@ -67,7 +91,7 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 		}
 		String clsname = ricmletPath;
 		Class<?> c = Class.forName(clsname);
-		HttpRicmlet getClassToCall =  (HttpRicmlet)c.getDeclaredConstructor().newInstance();
+		HttpRicmlet getClassToCall =  getSingletonRicmlet(c);
 		getClassToCall.doGet((HttpRicmletRequest) this, (HttpRicmletResponse) resp);
 	}
 
