@@ -8,6 +8,7 @@ import java.net.URLDecoder;
 import java.rmi.server.UID;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import httpserver.itf.HttpResponse;
 import httpserver.itf.HttpRicmlet;
@@ -19,15 +20,15 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 	
 	private static final Map<Class<?>, HttpRicmlet> singletons = new LinkedHashMap<>();
 	
-	Map<String, String> arguments;
-	Map<String, String> cookies;
+	ConcurrentHashMap<String, String> arguments;
+	ConcurrentHashMap<String, String> cookies;
 	
 	public HttpRicmletRequestImpl(HttpServer hs, String method, String ressname, BufferedReader br) throws IOException {
 		super(hs, method, ressname, br);
 		// We create a "fake" query to parse it correctly
 		this.arguments = splitQuery(new URL("https://localhost/"+ressname));
 		
-		Map<String, String> cookies = new LinkedHashMap<>();
+		ConcurrentHashMap<String, String> cookies = new ConcurrentHashMap<>();
 		
 		String line;
 	    while ((line = br.readLine()).isEmpty() == false) {
@@ -45,8 +46,8 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 	}
 
 	
-	public static Map<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
-	    Map<String, String> query_pairs = new LinkedHashMap<String, String>();
+	public static ConcurrentHashMap<String, String> splitQuery(URL url) throws UnsupportedEncodingException {
+		ConcurrentHashMap<String, String> query_pairs = new ConcurrentHashMap<String, String>();
 	    String query = url.getQuery();
 	    if(query == null) {
 	    	return null;
@@ -69,6 +70,9 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 	    		s.bump();
 	    		return s;
 	    	}
+	    	Session new_session = new Session(id);
+		    this.m_hs.sessions.put(new_session.getId(), new_session);
+		    return new_session;
 	    }
 	    Session new_session = new Session();
 	    this.m_hs.sessions.put(new_session.getId(), new_session);
