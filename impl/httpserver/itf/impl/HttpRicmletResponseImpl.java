@@ -30,6 +30,12 @@ public class HttpRicmletResponseImpl implements HttpRicmletResponse {
 		for (Map.Entry<String, String> entry : cookies.entrySet()) {
 			m_ps.println("Set-Cookie: " + entry.getKey() + "=" + entry.getValue() + "; Path=/\r\n");
 		}
+		if(m_req instanceof HttpRicmletRequestImpl) {
+			Session sess = (Session)((HttpRicmletRequestImpl)m_req).getSession();
+			if(sess != null) {
+				m_ps.println("Set-Cookie: session-id="+sess.getId() + "; Path=/\r\n"); 
+			}
+		}
 		m_ps.println("Date: " + new Date());
 		m_ps.println("Server: ricm-http 1.0");
 	}

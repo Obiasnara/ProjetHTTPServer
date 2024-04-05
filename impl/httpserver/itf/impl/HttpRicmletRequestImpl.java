@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.rmi.server.UID;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -25,13 +26,19 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 		super(hs, method, ressname, br);
 		// We create a "fake" query to parse it correctly
 		this.arguments = splitQuery(new URL("https://localhost/"+ressname));
+		
 		Map<String, String> cookies = new LinkedHashMap<>();
+		
 		String line;
 	    while ((line = br.readLine()).isEmpty() == false) {
-	        if (line.startsWith("Cookie: ")) {
-	        	System.out.println("COOOOKKIIIIIIE");
-	            String[] cookieParts = line.substring("Cookie: ".length()).split(";")[0].split("=");
-	            cookies.put(cookieParts[0], cookieParts[1]);
+	    	if (line.startsWith("Cookie: ")) {
+	            String[] cookiesParts = line.substring("Cookie: ".length()).split(";");
+	            for (String cookiePart : cookiesParts) {
+	                String[] cookie = cookiePart.split("=");
+	                if (cookie.length == 2) {
+	                    cookies.put(cookie[0].trim(), cookie[1].trim());
+	                }
+	            }
 	        }
 	    }
 	    this.cookies = cookies;
@@ -54,8 +61,18 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 	
 	@Override
 	public HttpSession getSession() {
-		// TODO Auto-generated method stub
-		return null;
+		// Handle the session
+	    String id = this.cookies.get("session-id");
+	    if(id != null) {
+	    	Session s = (Session) this.m_hs.sessions.get(id);
+	    	if(s != null) {
+	    		s.bump();
+	    		return s;
+	    	}
+	    }
+	    Session new_session = new Session();
+	    this.m_hs.sessions.put(new_session.getId(), new_session);
+	    return new_session;
 	}
 
 	@Override
@@ -91,7 +108,7 @@ public class HttpRicmletRequestImpl extends HttpRicmletRequest {
 		}
 		String clsname = ricmletPath;
 		Class<?> c = Class.forName(clsname);
-		HttpRicmlet getClassToCall =  getSingletonRicmlet(c);
+		HttpRicmlet getClassToCall = getSingletonRicmlet(c);
 		getClassToCall.doGet((HttpRicmletRequest) this, (HttpRicmletResponse) resp);
 	}
 

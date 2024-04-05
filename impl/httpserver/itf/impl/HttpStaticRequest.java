@@ -28,14 +28,14 @@ public class HttpStaticRequest extends HttpRequest {
 	    File file_requested = null;
 	    												// This trick is used because I set ./Files as resource directory
 	    if(this.m_ressname == null || this.m_ressname.equals("") || this.m_ressname.equals("/") || this.m_ressname.equals("/"+this.m_hs.getFolder().getPath()+"/")) {
-	    	this.m_ressname = "/"+this.m_hs.getFolder().getPath()+"/"+DEFAULT_FILE;
-	    }
-	    
-	    if(this.m_ressname.contains(this.m_hs.getFolder().getName())) {
-    		this.m_ressname = "."+this.m_ressname;
-	    } else  {
-	    	this.m_ressname.replace(".", "");
-	    	this.m_ressname = this.m_hs.getFolder().toString() + this.m_ressname;
+	    	this.m_ressname = this.m_hs.getFolder().getPath()+"/"+DEFAULT_FILE;
+	    } else {
+		    if(this.m_ressname.contains(this.m_hs.getFolder().getName())) {
+	    		this.m_ressname = "."+this.m_ressname;
+		    } else  {
+		    	this.m_ressname.replace(".", "");
+		    	this.m_ressname = this.m_hs.getFolder().toString() + this.m_ressname;
+		    }
 	    }
 	    
 	    // Find the file equal to DEFAULT_FILE

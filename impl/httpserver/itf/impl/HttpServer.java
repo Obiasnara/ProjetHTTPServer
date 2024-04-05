@@ -7,11 +7,18 @@ import java.lang.reflect.InvocationTargetException;
 import java.net.MalformedURLException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.rmi.server.UID;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.StringTokenizer;
 
 import httpserver.itf.HttpRequest;
 import httpserver.itf.HttpResponse;
 import httpserver.itf.HttpRicmlet;
+import httpserver.itf.HttpSession;
 
 
 
@@ -30,9 +37,12 @@ public class HttpServer {
 	private int m_port;
 	private File m_folder;  // default folder for accessing static resources (files)
 	private ServerSocket m_ssoc;
-
+	Map<String, HttpSession> sessions;
+	public final static int DESTRUCTION_DELAY = 10000;
+	
 	protected HttpServer(int port, String folderName) {
 		m_port = port;
+		sessions = new LinkedHashMap<>();
 		if (!folderName.endsWith(File.separator)) 
 			folderName = folderName + File.separator;
 		m_folder = new File(folderName);
@@ -43,6 +53,29 @@ public class HttpServer {
 			System.out.println("HttpServer Exception:" + e );
 			System.exit(1);
 		}
+		
+		new Thread(() -> {
+		    while (true) {
+		        try {
+		            Thread.sleep(5000); // Check every 5 seconds
+		        } catch (InterruptedException e) {
+		            e.printStackTrace();
+		        }
+
+		        Iterator<Entry<String, HttpSession>> iterator = sessions.entrySet().iterator();
+		        Long time = System.currentTimeMillis();
+		        while (iterator.hasNext()) {
+		            Entry<String, HttpSession> session = iterator.next();
+		            Session s = (Session)session.getValue();
+		            if (time -  s.getLastUseValue() > DESTRUCTION_DELAY) {
+		                System.out.println("Removed session : " + s.getId() + " life duration : " + (time-s.start_of_life) +" for inactivity.");
+		                iterator.remove();
+		            }
+		        }
+		    }
+		}).start();
+
+		
 	}
 	
 	public File getFolder() {
